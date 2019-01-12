@@ -8,9 +8,9 @@ A userscript that adds a button on bilibili player, which can be used to take a 
 
 ## Preview
 
-<p><img src=player_screenshot_A.png alt="screenshot A" style="max-width:500px" /></p>
+![screenshot of bangumi player](player_screenshot_A.png)
 
-<p><img src=player_screenshot_B.png alt="screenshot B" style="max-width:500px" /></p>
+![screenshot of video player](player_screenshot_B.png)
 
 ## Known Issues
 
