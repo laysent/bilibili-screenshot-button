@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+      "sourceMap":  false,
+      "target": "es2018",
+      "removeComments": false,
+      "module": "umd"
+  },
+  "files": [
+    "index.user.ts"
+  ]
+}

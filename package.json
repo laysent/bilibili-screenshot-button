@@ -1,0 +1,17 @@
+{
+  "name": "bilibili-screenshot-button",
+  "version": "1.0.0",
+  "description": "Add a button that lets you take screenshot of current video on bilibili.",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc index.user.ts"
+  },
+  "keywords": [
+    "userscript"
+  ],
+  "author": "LaySent",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^3.2.2"
+  }
+}
