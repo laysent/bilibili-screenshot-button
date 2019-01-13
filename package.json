@@ -9,9 +9,13 @@
   "keywords": [
     "userscript"
   ],
+  "pre-commit": [
+    "build"
+  ],
   "author": "LaySent",
   "license": "MIT",
   "devDependencies": {
+    "pre-commit": "^1.2.2",
     "typescript": "^3.2.2"
   }
 }
