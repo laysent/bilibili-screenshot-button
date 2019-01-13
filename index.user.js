@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Bilibili Screenshot Button
 // @author      LaySent
-// @version     1.0.0
+// @version     1.0.1
 // @description Add a button that lets you take screenshot of current video on bilibili.
 // @homepage    https://github.com/laysent/bilibili-screenshot-button
 // @match       https://www.bilibili.com/*
@@ -77,7 +77,7 @@ var Player = /** @class */ (function () {
         return buttonContainer;
     };
     Player.prototype.addButton = function () {
-        if (!this.button) {
+        if (!this.button || !document.body.contains(this.button)) {
             this.button = this.createButton();
             this.insertButton(this.button);
         }
