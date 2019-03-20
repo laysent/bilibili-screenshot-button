@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Bilibili Screenshot Button
 // @author      LaySent
-// @version     1.0.2
+// @version     1.0.3
 // @description Add a button that lets you take screenshot of current video on bilibili.
 // @homepage    https://github.com/laysent/bilibili-screenshot-button
 // @match       https://www.bilibili.com/*
@@ -11,30 +11,33 @@
 // @run-at      document-end
 // @license     MIT License
 // ==/UserScript==
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 function createScreenshotFromVideo(video) {
-    var canvas = document.createElement('canvas');
+    const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    var ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL('image/png');
+    const ctx = canvas.getContext('2d');
+    return new Promise(function (resolve, reject) {
+        function callback() {
+            try {
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const { data } = ctx.getImageData(0, 0, 1, 1);
+                if (data.every(pixel => pixel === 0)) {
+                    requestAnimationFrame(callback);
+                }
+                else {
+                    resolve(canvas.toDataURL('image/png'));
+                }
+            }
+            catch (e) {
+                reject(e);
+            }
+        }
+        requestAnimationFrame(callback);
+    });
 }
 function openImageInNewTab(dataURI) {
-    var html = "<html><body><img src=\"" + dataURI + "\"/></body></html>";
-    var newTab = window.open('', "tab-" + Date.now());
+    const html = `<html><body><img src="${dataURI}"/></body></html>`;
+    const newTab = window.open('', `tab-${Date.now()}`);
     newTab.document.open();
     newTab.document.write(html);
     newTab.document.close();
@@ -46,21 +49,21 @@ function isResourceUnderSameDomain(url) {
         return true;
     return false;
 }
-var Player = /** @class */ (function () {
-    function Player() {
-        var _this = this;
-        this.takeScreenshot = function () {
-            if (!_this.video)
+class Player {
+    constructor() {
+        this.takeScreenshot = () => {
+            if (!this.video)
                 return;
-            if (_this.button.classList.contains('disabled'))
+            if (this.button.classList.contains('disabled'))
                 return;
-            _this.pause();
-            var image = createScreenshotFromVideo(_this.video);
-            openImageInNewTab(image);
+            this.pause();
+            createScreenshotFromVideo(this.video).then((image) => {
+                openImageInNewTab(image);
+            });
         };
     }
-    Player.prototype.createButton = function () {
-        var buttonContainer = document.createElement('div');
+    createButton() {
+        const buttonContainer = document.createElement('div');
         buttonContainer.className = 'bilibili-player-video-btn bilibili-screenshot';
         buttonContainer.title = 'Screenshot';
         buttonContainer.innerHTML = [
@@ -77,8 +80,8 @@ var Player = /** @class */ (function () {
         ].join('');
         buttonContainer.addEventListener('click', this.takeScreenshot);
         return buttonContainer;
-    };
-    Player.prototype.addButton = function () {
+    }
+    addButton() {
         if (!this.button || !document.body.contains(this.button)) {
             this.button = this.createButton();
             this.insertButton(this.button);
@@ -90,141 +93,118 @@ var Player = /** @class */ (function () {
             this.button.classList.add('disabled');
         }
         return this;
-    };
-    Player.prototype.setVideo = function (video) {
+    }
+    setVideo(video) {
         this.video = video;
         return this;
-    };
-    Player.prototype.pause = function () {
-        var videoButton = document.querySelector('.bilibili-player-video-btn-start');
+    }
+    pause() {
+        const videoButton = document.querySelector('.bilibili-player-video-btn-start');
         if (videoButton.classList.contains('video-state-pause'))
             return;
         videoButton.click();
-    };
-    return Player;
-}());
-var BangumiPlayer = /** @class */ (function (_super) {
-    __extends(BangumiPlayer, _super);
-    function BangumiPlayer() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.styles = [
+    }
+}
+class BangumiPlayer extends Player {
+    constructor() {
+        super(...arguments);
+        this.styles = [
             '.bilibili-screenshot { vertical-align: top; text-align:center; }',
             '.bilibili-screenshot svg { height: 100%; width: 50%; fill: #99a2aa; }',
         ].join('');
-        return _this;
     }
-    BangumiPlayer.prototype.insertButton = function (button) {
-        var controls = document.querySelector('.bilibili-player-video-control');
-        var anchor = document.querySelector('.bilibili-player-video-btn-volume');
+    insertButton(button) {
+        const controls = document.querySelector('.bilibili-player-video-control');
+        const anchor = document.querySelector('.bilibili-player-video-btn-volume');
         controls.insertBefore(button, anchor);
-    };
-    return BangumiPlayer;
-}(Player));
-var VideoPlayer = /** @class */ (function (_super) {
-    __extends(VideoPlayer, _super);
-    function VideoPlayer() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.styles = [
+    }
+}
+class VideoPlayer extends Player {
+    constructor() {
+        super(...arguments);
+        this.styles = [
             '.bilibili-screenshot { vertical-align: top; text-align:center; }',
             '.bilibili-screenshot svg { height: 100%; width: 50%; fill: #fff; }',
         ].join('');
-        return _this;
     }
-    VideoPlayer.prototype.insertButton = function (button) {
-        var _this = this;
-        var controls = document.querySelector('.bilibili-player-video-control-bottom-right');
+    insertButton(button) {
+        const controls = document.querySelector('.bilibili-player-video-control-bottom-right');
         if (controls.childNodes.length > 0) {
             controls.insertBefore(button, controls.childNodes[0]);
         }
         else {
             if (this.observer)
                 this.observer.disconnect();
-            this.observer = new MutationObserver(function (mutations) {
+            this.observer = new MutationObserver((mutations) => {
                 if (mutations[0].addedNodes.length > 0) {
                     controls.insertBefore(button, controls.childNodes[0]);
-                    _this.observer.disconnect();
-                    _this.observer = null;
+                    this.observer.disconnect();
+                    this.observer = null;
                 }
             });
             this.observer.observe(controls, { childList: true, subtree: true });
         }
-    };
-    return VideoPlayer;
-}(Player));
+    }
+}
 function isVideoElement(element) {
     return element.nodeName === 'VIDEO';
 }
-var VideoMonitor = /** @class */ (function () {
-    function VideoMonitor() {
-        var _this = this;
-        this.observer = function (mutationsList) {
-            for (var _i = 0, mutationsList_1 = mutationsList; _i < mutationsList_1.length; _i++) {
-                var mutation = mutationsList_1[_i];
-                for (var _a = 0, _b = [].slice.call(mutation.addedNodes); _a < _b.length; _a++) {
-                    var added = _b[_a];
-                    if (isVideoElement(added) && _this.notify)
-                        _this.notify(added);
+class VideoMonitor {
+    constructor() {
+        this.observer = (mutationsList) => {
+            for (const mutation of mutationsList) {
+                for (const added of [].slice.call(mutation.addedNodes)) {
+                    if (isVideoElement(added) && this.notify)
+                        this.notify(added);
                 }
             }
         };
     }
-    VideoMonitor.prototype.subscribe = function (callback) {
+    subscribe(callback) {
         this.notify = callback;
-    };
-    VideoMonitor.prototype.start = function () {
-        var observer = new MutationObserver(this.observer);
+    }
+    start() {
+        const observer = new MutationObserver(this.observer);
         observer.observe(document.body, { childList: true, subtree: true });
-        var existing = document.body.querySelector('video');
+        const existing = document.body.querySelector('video');
         if (existing)
             this.notify(existing);
-        return function () {
+        return () => {
             observer.disconnect();
         };
-    };
-    return VideoMonitor;
-}());
-var OtherPage = /** @class */ (function () {
-    function OtherPage() {
     }
-    OtherPage.prototype.start = function () {
-        console.info("Current page is " + location.href + ", bilibili screenshot button will not be added.");
-    };
-    return OtherPage;
-}());
-var VideoContainedPage = /** @class */ (function () {
-    function VideoContainedPage() {
-        var _this = this;
-        this.onVideoDetect = function (video) {
-            _this.player.setVideo(video).addButton();
+}
+class OtherPage {
+    start() {
+        console.info(`Current page is ${location.href}, bilibili screenshot button will not be added.`);
+    }
+}
+class VideoContainedPage {
+    constructor() {
+        this.onVideoDetect = (video) => {
+            this.player.setVideo(video).addButton();
         };
     }
-    VideoContainedPage.prototype.start = function () {
-        var monitor = new VideoMonitor();
+    start() {
+        const monitor = new VideoMonitor();
         monitor.subscribe(this.onVideoDetect);
         monitor.start();
-    };
-    return VideoContainedPage;
-}());
-var BangumiPage = /** @class */ (function (_super) {
-    __extends(BangumiPage, _super);
-    function BangumiPage() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.player = new BangumiPlayer();
-        return _this;
     }
-    return BangumiPage;
-}(VideoContainedPage));
-var VideoPage = /** @class */ (function (_super) {
-    __extends(VideoPage, _super);
-    function VideoPage() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.player = new VideoPlayer();
-        return _this;
+}
+class BangumiPage extends VideoContainedPage {
+    constructor() {
+        super(...arguments);
+        this.player = new BangumiPlayer();
     }
-    return VideoPage;
-}(VideoContainedPage));
+}
+class VideoPage extends VideoContainedPage {
+    constructor() {
+        super(...arguments);
+        this.player = new VideoPlayer();
+    }
+}
 function pageFactory() {
-    var href = location.href;
+    const href = location.href;
     if (/bilibili\.com\/bangumi\/play\//.test(href)) {
         return new BangumiPage();
     }
@@ -234,9 +214,9 @@ function pageFactory() {
     return new OtherPage();
 }
 try {
-    var page = pageFactory();
+    const page = pageFactory();
     page.start();
 }
 catch (e) {
-    console.error("[ERROR]: " + e + "\nIf you think it's a bug, you can create an issue on GitHub. A pull request is more than welcome.");
+    console.error(`[ERROR]: ${e}\nIf you think it's a bug, you can create an issue on GitHub. A pull request is more than welcome.`);
 }

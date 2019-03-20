@@ -14,5 +14,5 @@ A userscript that adds a button on bilibili player, which can be used to take a 
 
 ## Known Issues
 
-+ When move progress bar, the first screenshot might be blank. Take screenshot second time will work.
++ When move progress bar, the first screenshot might be blank. Script will try as many times as possible until the screenshot is not empty anymore. (thus it will be delay for generating screenshot)
 + When quality of video is low (i.e. 360p), screenshot might not work, as video is stored on CDN and taking screenshot is facing cross domain issue.

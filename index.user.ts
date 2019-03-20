@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Bilibili Screenshot Button
 // @author      LaySent
-// @version     1.0.2
+// @version     1.0.3
 // @description Add a button that lets you take screenshot of current video on bilibili.
 // @homepage    https://github.com/laysent/bilibili-screenshot-button
 // @match       https://www.bilibili.com/*
@@ -18,9 +18,23 @@ function createScreenshotFromVideo (video: HTMLVideoElement) {
   canvas.height = video.videoHeight;
 
   const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-  return canvas.toDataURL('image/png');
+  return new Promise(function (resolve, reject) {
+    function callback() {
+      try {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const { data } = ctx.getImageData(0, 0, 1, 1);
+        if (data.every(pixel => pixel === 0)) {
+          requestAnimationFrame(callback);
+        } else {
+          resolve(canvas.toDataURL('image/png'));
+        }
+      }
+      catch (e) {
+        reject(e);
+      }
+    }
+    requestAnimationFrame(callback);
+  });
 }
 
 function openImageInNewTab (dataURI) {
@@ -47,8 +61,9 @@ abstract class Player {
     if (!this.video) return;
     if (this.button.classList.contains('disabled')) return;
     this.pause();
-    const image = createScreenshotFromVideo(this.video);
-    openImageInNewTab(image);
+    createScreenshotFromVideo(this.video).then((image) => {
+      openImageInNewTab(image);
+    });
   }
   createButton() {
     const buttonContainer = document.createElement('div');
