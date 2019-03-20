@@ -3,7 +3,8 @@
       "sourceMap":  false,
       "target": "es2018",
       "removeComments": false,
-      "module": "umd"
+      "module": "umd",
+      "lib": ["es2018", "dom"]
   },
   "files": [
     "index.user.ts"
