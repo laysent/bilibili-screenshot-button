@@ -5,8 +5,8 @@
 // @description Add a button that lets you take screenshot of current video on bilibili.
 // @homepage    https://github.com/laysent/bilibili-screenshot-button
 // @match       https://www.bilibili.com/*
-// @downloadURL https://github.com/laysent/bilibili-screenshot-button/index.user.js
-// @updateURL   https://raw.githubusercontent.com/laysent/bilibili-screenshot-button/master/index.user.js
+// @downloadURL https://github.com/laysent/bilibili-screenshot-button/raw/master/index.user.js
+// @updateURL   https://github.com/laysent/bilibili-screenshot-button/raw/master/index.user.js
 // @supportURL  https://github.com/laysent/bilibili-screenshot-button/issues
 // @run-at      document-end
 // @license     MIT License
