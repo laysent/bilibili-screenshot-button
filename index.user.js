@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Bilibili Screenshot Button
 // @author      LaySent
-// @version     1.0.3
+// @version     1.0.4
 // @description Add a button that lets you take screenshot of current video on bilibili.
 // @homepage    https://github.com/laysent/bilibili-screenshot-button
 // @match       https://www.bilibili.com/*
@@ -206,7 +206,7 @@ class VideoPage extends VideoContainedPage {
 function pageFactory() {
     const href = location.href;
     if (/bilibili\.com\/bangumi\/play\//.test(href)) {
-        return new BangumiPage();
+        return new VideoPage();
     }
     else if (/bilibili\.com\/video\//.test(href)) {
         return new VideoPage();
